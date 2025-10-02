@@ -98,7 +98,7 @@ Todas las rutas de la API están prefijadas con `/api`. Las rutas que requieren 
 
 ### Autenticación
 
-#### `POST /register`
+#### `POST /user`
 Registra un nuevo usuario.
 
 - **Body:**
@@ -122,7 +122,7 @@ Registra un nuevo usuario.
     }
     ```
 
-#### `POST /login`
+#### `POST /Auth`
 Inicia sesión y obtiene un token de autenticación.
 
 - **Body:**
@@ -156,9 +156,62 @@ Cierra la sesión del usuario (invalida el token actual).
 
 ---
 
-### Notas (`/notes`)
+### Usuario (`/user`)
 
-#### `GET /notes`
+#### `GET /user`
+Obtiene los datos del usuario autenticado.
+- **Autenticación:** Requerida.
+- **Respuesta Exitosa (200 OK):**
+    ```json
+    {
+        "data": {
+            "id": 1,
+            "name": "John Doe",
+            "email": "john.doe@example.com"
+        }
+    }
+    ```
+
+#### `GET /user/{id}`
+Obtiene un usuario específico por su ID.
+- **Autenticación:** Requerida.
+- **Respuesta Exitosa (200 OK):**
+    ```json
+    {
+        "data": {
+            "id": 1,
+            "name": "John Doe",
+            "email": "john.doe@example.com"
+        }
+    }
+    ```
+
+#### `PATCH /users/{id}`
+Actualiza los datos de un usuario.
+- **Autenticación:** Requerida.
+- **Body:**
+    ```json
+    {
+        "name": "John Doe Updated",
+        "email": "john.doe.new@example.com"
+    }
+    ```
+- **Respuesta Exitosa (200 OK):**
+    ```json
+    {
+        "data": {
+            "id": 1,
+            "name": "John Doe Updated",
+            "email": "john.doe.new@example.com"
+        }
+    }
+    ```
+
+---
+
+### Notas (`/note`)
+
+#### `GET /note`
 Obtiene todas las notas del usuario autenticado.
 - **Autenticación:** Requerida.
 - **Respuesta Exitosa (200 OK):**
@@ -175,14 +228,14 @@ Obtiene todas las notas del usuario autenticado.
     }
     ```
 
-#### `POST /notes`
+#### `POST /note`
 Crea una nueva nota.
 - **Autenticación:** Requerida.
 - **Body:**
     ```json
     {
-        "title": "Nueva Nota",
-        "content": "Contenido de la nueva nota."
+        "Titulo": "Nueva Nota",
+        "Note": "Contenido de la nueva nota."
     }
     ```
 - **Respuesta Exitosa (201 Created):**
@@ -197,29 +250,39 @@ Crea una nueva nota.
     }
     ```
 
-#### `GET /notes/{id}`
-Obtiene una nota específica por su ID.
+#### `POST /notes`
+Obtiene las notas del usuario autenticado filtradas por fecha.
 - **Autenticación:** Requerida.
+- **Body:**
+    ```json
+    {
+        "created_at": "2025-10-02"
+    }
+    ```
 - **Respuesta Exitosa (200 OK):**
     ```json
     {
-        "data": {
-            "id": 1,
-            "title": "Mi primera nota",
-            "content": "Este es el contenido de la nota.",
-            "created_at": "2025-10-02T10:00:00.000000Z"
-        }
+        "Status": 200,
+        "nota": "mostrada por fecha",
+        "Data": [
+            {
+                "id": 1,
+                "title": "Mi primera nota",
+                "content": "Este es el contenido de la nota.",
+                "created_at": "2025-10-02T10:00:00.000000Z"
+            }
+        ]
     }
     ```
 
-#### `PUT /notes/{id}`
+#### `PATCH /notes/{id}`
 Actualiza una nota existente.
 - **Autenticación:** Requerida.
 - **Body:**
     ```json
     {
-        "title": "Nota Actualizada",
-        "content": "Contenido actualizado."
+        "Titulo": "Nota Actualizada",
+        "Note": "Contenido actualizado."
     }
     ```
 - **Respuesta Exitosa (200 OK):**
@@ -234,7 +297,18 @@ Actualiza una nota existente.
     }
     ```
 
-#### `DELETE /notes/{id}`
+#### `DELETE /note`
 Elimina una nota.
 - **Autenticación:** Requerida.
-- **Respuesta Exitosa (204 No Content):** (Sin contenido en la respuesta)
+- **Body:**
+    ```json
+    {
+        "id_note": 1
+    }
+    ```
+- **Respuesta Exitosa (200 OK):**
+    ```json
+    {
+        "message": "Nota eliminada correctamente"
+    }
+    ```
