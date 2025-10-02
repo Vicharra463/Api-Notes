@@ -3,6 +3,7 @@
 namespace App\services;
 
 use App\Models\Note;
+use GuzzleHttp\Psr7\Request;
 use Illuminate\Support\Arr;
 
 class NoteServices
@@ -24,21 +25,10 @@ class NoteServices
       return $res;
    }
 
-   public function listar()
+   public function listar($authUser)
    {
-      $resp = Note::all();
+      $resp = Note::where('Id_Cliente', $authUser->id)->get();
       return $resp;
-   }
-
-   public function show($fecha, $id)
-   {
-      if (is_null($fecha) and is_null($id)) {
-         return null;
-      }
-      return Note::select('Note', 'Titulo', 'Fecha')
-         ->whereDate('Fecha', $fecha)
-         ->Where('Id_Cliente', $id)
-         ->get();
    }
 
    public function update($authUser, array $data)
@@ -47,16 +37,30 @@ class NoteServices
       if (!$note) return ['status' => 404, 'message' => 'Note not found'];
       //busca el id del cliente con el find luego 
       //se compara el del auth con este
-       if ($note->Id_Cliente !== $authUser->id) {
-        return ['status' => 403, 'message' => 'Forbidden: Cannot update note of another user'];
-    }
+      if ($note->Id_Cliente !== $authUser->id) {
+         return ['status' => 403, 'message' => 'Forbidden: Cannot update note of another user'];
+      }
       unset($data['id']);
       $note->update($data);
       return ['status' => 200, 'message' => 'Note updated', 'note' => $note];
    }
 
+public function verporfecha($userauth, $request)
+{
+    $query = Note::where('Id_Cliente', $userauth->id);
 
-   public function eliminar($id)
+    if ($request->has(['from', 'to'])) {
+        $query->whereBetween('Fecha', [$request->from, $request->to]);
+    }
+
+    if ($request->has('date')) {
+        $query->whereDate('Fecha', $request->date);
+    }
+
+    return $query->get();
+}
+
+   public function eliminar($id,$userauth)
    {
       if (is_null($id)) {
          return response()->json([
@@ -64,8 +68,19 @@ class NoteServices
             'message' => 'id no valido'
          ]);
       }
-      $data = Note::destroy($id);
+      $verificar = Note::find($id);
+          if(!$verificar){ 
+        return null;
+    }
+      if($verificar->Id_Cliente !== $userauth->id){
+          return ['status' => 403, 'message' => 'Forbidden: Cannot update note of another user'];
+      }
+       Note::destroy($id);
 
-      return $data;
+
+      return [
+            'status' => 201,
+            'message' => 'Nota eliminada'
+        ];
    }
 }

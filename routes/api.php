@@ -21,9 +21,9 @@ Route::middleware('auth:sanctum')->group(function () {
     route::post('/note', [NoteController::class, 'store']);
     route::get('/note', [NoteController::class, 'index']);
     route::patch('notes/{id}', [NoteController::class, 'update']);
-    route::get('/note/{fecha}/{id}', [NoteController::class, 'show']);
-    route::delete('/note/{id}', [NoteController::class, 'destroy']);
-    //LOGOUT
+    route::delete('/noted', [NoteController::class, 'destroy']);
+    route::post('/notes', [NoteController::class, 'showNotefromdate']);
+    //LOGOUT "2025-09-20 15:01:35"
     Route::post('/logout', [AutController::class, 'logout']);
 });
 //Rutas para la auntenticacion

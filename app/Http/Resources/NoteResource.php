@@ -18,7 +18,7 @@ class NoteResource extends JsonResource
             'id' => $this->id,
             'Id_Cliente' => $this->Id_Cliente,
             'Titulo' => $this->Titulo,
-            'Fecha' => $this->Fecha,
+            'Fecha' => \Carbon\Carbon::parse($this->Fecha)->format('Y-m-d'),
             'Hora'=> \Carbon\Carbon::parse($this->Fecha)->format('H:i'),
             'Note' => $this->Note
         ];

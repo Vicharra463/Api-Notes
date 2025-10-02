@@ -17,10 +17,12 @@ class NoteController extends Controller
         $this->NoteServices = $NoteServices;
     }
 
-    public function store(NoteRequest $request)
+    public function store(NoteRequest $request )
     {
         try {
-            $data = $request->only(['Id_Cliente', 'Titulo', 'Note']);
+            $authUser = $request->user();
+            $data = $request->only(['Titulo', 'Note']);
+            $data['Id_Cliente'] = $authUser->id;
             $notecreate = $this->NoteServices->createdNota($data);
             return (new NoteResource($notecreate))->additional([
                 'status' => 201,
@@ -34,10 +36,11 @@ class NoteController extends Controller
         }
     }
 
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $lista = $this->NoteServices->listar();
+            $authUser = $request->user();
+            $lista = $this->NoteServices->listar($authUser);
             return (NoteResource::collection($lista))->additional([
                 'status' => 201,
                 'message' => 'Lista Mostrada Correctamente'
@@ -59,38 +62,31 @@ public function update(Request $request, $id)
     $res = $this->NoteServices->update($authUser, $data);
     return response()->json($res, $res['status']);
 }
-
-
-    public function show($fecha, $id)
-    {
-        $data = $this->NoteServices->show($fecha, $id);
-
-        if ($data->isEmpty()) {
-            return response()->json([
-                'status'  => 404,
-                'message' => 'Nota no encontrada'
-            ]);
-        }
-
-        return response()->json([
-            'status'  => 200,
-            'message' => 'Notas mostradas correctamente',
-            'Data' => $data
-        ]);
+    public function showNotefromdate(Request $request){
+        $userauth = $request->user();
+        $res = $this->NoteServices->verporfecha($userauth, $request);
+        return response()->json(
+            [
+                'Status' => 200,
+                'nota' => "mostrada por fecha",
+                'Data' => $res
+            ]
+        );
     }
 
-    public function destroy($id)
+
+    public function destroy(Request $request)
     {
-        $data = $this->NoteServices->eliminar($id);
+         $userauth = $request->user();
+         $id = $request->id_note;
+        $data = $this->NoteServices->eliminar($id, $userauth);
         if (is_null($data)) {
             return response()->json([
                 'Status' => 404,
                 'Message' => 'Nota no encontrada'
             ]);
         }
-        return response()->json([
-            'status' => 201,
-            'message' => 'Nota eliminada'
-        ]);
+        return response()->json($data);
     }
+
 }
